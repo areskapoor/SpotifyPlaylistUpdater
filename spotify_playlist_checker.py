@@ -10,6 +10,7 @@ load_dotenv()
 # Read values from environment
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REDIRECT_URI = "http://localhost:8080"
 
 # Initialize SQLite database
 DB_FILE = "playlist_memory.db"
