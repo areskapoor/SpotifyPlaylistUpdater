@@ -1,3 +1,4 @@
 .env
 my_account.session
 downloads/
+playlist_memory.db

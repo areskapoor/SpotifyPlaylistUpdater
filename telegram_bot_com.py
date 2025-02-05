@@ -19,17 +19,21 @@ bot_username = "deezload2bot"
 class PlaylistSession:
     def __init__(self, playlist_url):
         self.playlist_url = playlist_url  # Spotify playlist URL
+        self.playlist_name = None
         self.total_tracks = None  # Number of tracks expected (set from bot's response)
         self.downloaded_songs = {}  # Dict of file names to file ids #TODO: decide if better to use dict or ordered data structure like a list
         self.get_all_clicked = False  # Whether "GET ALL" button was clicked
 
+    def set_playlist_name(self, playlist_name):
+        self.playlist_name = playlist_name    
+        
     def set_total_tracks(self, total_tracks):
         """Set the total number of tracks once bot responds."""
         self.total_tracks = total_tracks
 
-    def add_downloaded_song(self, file_name, file_id):
+    def add_downloaded_song(self, file_name, metadata):
         """Track each downloaded song."""
-        self.downloaded_songs[file_name] = file_id
+        self.downloaded_songs[file_name] = metadata
 
     def all_songs_downloaded(self):
         """Check if all expected tracks have been downloaded."""
@@ -61,7 +65,7 @@ def extract_download_progress(msg):
 
 def find_total_tracks(msg):
     match = re.search(r"Total tracks:\s*(\d+)", msg.text)
-    return int(match.group(1)) if match else None
+    return int(match.group(1)) if match else None    
 
 
 def download_songs(bot_username, session_start_time, PlaylistSesh: PlaylistSession):
@@ -73,8 +77,14 @@ def download_songs(bot_username, session_start_time, PlaylistSesh: PlaylistSessi
             PlaylistSesh.all_songs_downloaded()):
             break
         if msg.audio:
-            PlaylistSesh.add_downloaded_song(msg.audio.file_name, 
-                                             msg.audio.file_id)
+            artist = msg.audio.performer or "Unknown Artist"
+            title = msg.audio.title or "Unknown Title"
+            metadata = {
+                "title": title,
+                "artist": artist,
+                "file_id": msg.audio.file_id
+                        }
+            PlaylistSesh.add_downloaded_song(msg.audio.file_name, metadata)
             file_path = app.download_media(msg.audio.file_id)
             print(f"Downloaded {msg.audio.file_name} to {file_path}")
             
@@ -139,6 +149,7 @@ def send_playlist_and_download(bot_username, playlist_url):
         return None
 
     total_tracks = find_total_tracks(playlist_response)
+    PlaylistSesh.set_playlist_name(playlist_response.web_page.title)
     PlaylistSesh.set_total_tracks(total_tracks)
     
     # Click the "GET ALL" button
@@ -162,5 +173,9 @@ def send_playlist_and_download(bot_username, playlist_url):
 
 if __name__ == "__main__":
     with app:  # Start the client once and reuse it
-        playlist_url = input("Input the URL of the Spotify Playlist You Wish To Download Songs From")
-        send_playlist_and_download(bot_username, playlist_url)
+        while True:
+            playlist_url = input("Input the URL of the Spotify Playlist You Wish To Download Songs From: ")
+            send_playlist_and_download(bot_username, playlist_url)
+            command = input("press q and hit enter to terminate this session. Press and other key to continue the session: ")
+            if command.strip().lower() == "q":
+                break
