@@ -19,7 +19,7 @@ bot_username = "deezload2bot"
 class PlaylistSession:
     def __init__(self, playlist_url):
         self.playlist_url = playlist_url  # Spotify playlist URL
-        self.playlist_name = None
+        self.playlist_name = "Unknown Playlist"
         self.total_tracks = None  # Number of tracks expected (set from bot's response)
         self.downloaded_songs = {}  # Dict of file names to file ids #TODO: decide if better to use dict or ordered data structure like a list
         self.get_all_clicked = False  # Whether "GET ALL" button was clicked
@@ -84,9 +84,22 @@ def download_songs(bot_username, session_start_time, PlaylistSesh: PlaylistSessi
                 "artist": artist,
                 "file_id": msg.audio.file_id
                         }
-            PlaylistSesh.add_downloaded_song(msg.audio.file_name, metadata)
-            file_path = app.download_media(msg.audio.file_id)
-            print(f"Downloaded {msg.audio.file_name} to {file_path}")
+            safe_playlist_name = "".join(c if c.isalnum() or c in " _-" 
+                                         else "_" for c in PlaylistSesh.playlist_name)
+            download_dir = os.path.join("downloads", safe_playlist_name)
+            os.makedirs(download_dir, exist_ok=True)
+
+            # Generate clean file name
+            safe_file_name = f"{artist} - {title}.mp3"
+            safe_file_name = "".join(c if c.isalnum() or c in " _-()" else "_" for c in safe_file_name)
+            PlaylistSesh.add_downloaded_song(safe_file_name, metadata)
+            
+            # Set the full path
+            file_path = os.path.join(download_dir, safe_file_name)
+
+            # Download the file
+            downloaded_path = app.download_media(msg.audio.file_id, file_name=file_path)
+            print(f"Downloaded {msg.audio.file_name} to {downloaded_path}")
             
     if PlaylistSesh.all_songs_downloaded():
         print("Finished Downloading All Songs")
@@ -96,8 +109,7 @@ def download_songs(bot_username, session_start_time, PlaylistSesh: PlaylistSessi
             {len(PlaylistSesh.downloaded_songs)} / {total_tracks}""")
     return False
             
-
-
+            
 def wait_for_response(bot_username, session_start_time, is_button, text, max_wait):
     start_time = time.time()
     while time.time() - start_time < max_wait:
@@ -149,7 +161,10 @@ def send_playlist_and_download(bot_username, playlist_url):
         return None
 
     total_tracks = find_total_tracks(playlist_response)
-    PlaylistSesh.set_playlist_name(playlist_response.web_page.title)
+    if playlist_response.web_page:
+        PlaylistSesh.set_playlist_name(playlist_response.web_page.title)
+    else:
+        print("Could Not Find Playlist Title, Defaulting Title to Unknown Playlist")
     PlaylistSesh.set_total_tracks(total_tracks)
     
     # Click the "GET ALL" button
