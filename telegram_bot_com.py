@@ -86,8 +86,11 @@ def download_songs(app: Client, bot_username, session_start_time, playlist_sesh:
             download_dir = os.path.join("downloads", safe_playlist_name)
             os.makedirs(download_dir, exist_ok=True)
             safe_file_name = f"{artist} - {title}.mp3"
-            safe_file_name = "".join(c if c.isalnum() or c in " _-()" else "_" 
-                                     for c in safe_file_name)
+            safe_file_name = "".join(
+                c if c.isalnum() or c in " _-()." 
+                else "_" 
+                for c in safe_file_name
+            )
 
             playlist_sesh.add_downloaded_song(safe_file_name, metadata)
             file_path = os.path.join(download_dir, safe_file_name)
