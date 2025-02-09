@@ -100,9 +100,9 @@ You’ll be asked to log in to both Spotify (via OAuth) and Telegram (via a phon
 All MP3 files are saved into a downloads/ directory under a subfolder named after the playlist. For example:
 
 downloads/
-└── My Playlist Name/
-    ├── Artist1 - Song1.mp3
-    ├── Artist2 - Song2.mp3
+── My Playlist Name/
+    ── Artist1 - Song1.mp3
+    ── Artist2 - Song2.mp3
     ...
 
 ## Contributing
