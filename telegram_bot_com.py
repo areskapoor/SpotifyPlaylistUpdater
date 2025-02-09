@@ -191,6 +191,6 @@ if __name__ == "__main__":
         while True:
             playlist_url = input("Input the URL of the Spotify Playlist You Wish To Download Songs From: ")
             send_playlist_and_download(bot_username, playlist_url)
-            command = input("press q and hit enter to terminate this session. Press and other key to continue the session: ")
+            command = input("press q and hit enter to terminate this session. Press any other key to continue the session: ")
             if command.strip().lower() == "q":
                 break
