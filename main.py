@@ -74,7 +74,7 @@ def main():
                 # If there are no new songs, optionally let the user download anyway
                 cmd = input("No new songs. Download the original playlist anyway? (y/n): ")
                 if cmd.strip().lower() == "y":
-                    tbot.send_playlist_and_download(app, bot_username, playlist_url=playlist_url)
+                    tbot.send_playlist_and_download(app, bot_username, playlist_url=playlist_url, original_name=original_name)
             
             cmd = input("Would you like to view your playlists being tracked? (y/n): ")
             if cmd.strip().lower() == "y":
