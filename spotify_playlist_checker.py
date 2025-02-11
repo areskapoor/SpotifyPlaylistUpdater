@@ -4,7 +4,6 @@ import sqlite3
 import json
 from urllib.parse import urlparse
 
-# We'll store our Spotipy client in a module-level variable, set by initialize_spotify
 sp = None  
 
 DB_FILE = "playlist_memory.db"

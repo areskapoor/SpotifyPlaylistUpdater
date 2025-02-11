@@ -41,8 +41,8 @@ A tool for DJs and music enthusiasts to **track Spotify playlists** and **downlo
 ### 1. Clone or Download this Repository
 
 ```bash
-git clone https://github.com/YourUsername/spotify-playlist-downloader.git
-cd spotify-playlist-downloader
+git clone https://github.com/areskapoor/SpotifyPlaylistUpdater.git
+cd SpotifyPlaylistUpdater
 ```
 
 ### 2. Create and Activate a Virtual Environment (Optional but Recommended)
@@ -76,6 +76,7 @@ PHONE_NUMBER=your_phone_number  # if you're using user-based sessions
 BOT_TOKEN=your_bot_token        # if needed (you may not need both)
 ```
 - Spotify Client ID & Client Secret: You can get these from the Spotify Developer Dashboard.
+   - In the Spotify Developer Dashboard, set the Redirect URI to `http://localhost:8080`
 - Telegram API ID & API Hash: Obtain them by creating an app on my.telegram.org.
 - Phone Number: If you are using Pyrogram in user mode (not as a bot).
 - Bot Token: If you are using a Telegram bot account instead of a user session.
