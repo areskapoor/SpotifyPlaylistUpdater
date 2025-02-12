@@ -61,24 +61,24 @@ def main():
                 print("New songs found:")
                 for uri, info in new_songs.items():
                     print(f"- {info['name']} by {info['artists']} (URI: {uri})")
-
-                user_id = spc.get_current_user_id()
-                temp_playlist_name = f"{original_name} - Newly Added Songs (Temp)"
-                temp_playlist_link = spc.create_new_playlist(
-                    new_songs_dict=new_songs,
-                    user_id=user_id,
-                    playlist_name=temp_playlist_name
-                )
-                print(f"Created new temp playlist: {temp_playlist_link}")
-                
-                cmd = input("Would you like to download the new songs? (y/n): ")
-                if cmd.strip().lower() == "y":
-                    print("Downloading new songs...")
+                    
+                cmd = input("Would you like to download the whole playlist (all), just the new songs (new), or none (n)? (all/new/n): ")
+                if cmd.strip().lower() == "all":
+                    print("Downloading the whole playlist...")
+                    tbot.send_playlist_and_download(app, bot_username, playlist_url=playlist_url, original_name=original_name)
+                elif cmd.strip().lower() == "new":
+                    print("Downloading the new songs...")
+                    user_id = spc.get_current_user_id()
+                    temp_playlist_name = f"{original_name} - Newly Added Songs (Temp)"
+                    temp_playlist_link = spc.create_new_playlist(
+                        new_songs_dict=new_songs,
+                        user_id=user_id,
+                        playlist_name=temp_playlist_name
+                    )
+                    print(f"Created new temp playlist: {temp_playlist_link}")
                     tbot.send_playlist_and_download(app, bot_username, playlist_url=temp_playlist_link, original_name=original_name)
-
-                # Optionally delete the playlist
-                spc.delete_playlist_with_confirmation(temp_playlist_link)
-
+                    
+                    spc.delete_playlist_with_confirmation(temp_playlist_link)
             else:
                 # If there are no new songs, optionally let the user download anyway
                 cmd = input("No new songs. Download the original playlist anyway? (y/n): ")
