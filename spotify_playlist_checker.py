@@ -44,6 +44,55 @@ def initialize_db():
             songs TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_prompts (
+            user_id TEXT PRIMARY KEY,
+            prompted INTEGER
+        )
+    """)
+    conn.commit()
+    conn.close()
+    
+    
+def set_prompted_status(prompted: bool):
+    """
+    Set the prompted status for a user in the database.
+    
+    :param user_id: The Spotify user ID.
+    :param prompted: A boolean indicating whether the user has been prompted.
+    """
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    user_id = get_current_user_id()
+    prompted_value = 1 if prompted else 0
+    cursor.execute("""
+        INSERT OR REPLACE INTO user_prompts (user_id, prompted)
+        VALUES (?, ?)
+    """, (user_id, prompted_value))
+    conn.commit()
+    conn.close()
+
+  
+def has_been_prompted_for_tracking():
+    """Check if the user has been prompted for tracking all playlists."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    user_id = get_current_user_id()
+    cursor.execute("SELECT prompted FROM user_prompts WHERE user_id = ?", (user_id,))
+    result = cursor.fetchone()
+    conn.close()
+    return result is not None and result[0] == 1
+
+
+def save_prompted_for_tracking():
+    """Save that the user has been prompted for tracking all playlists."""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    user_id = get_current_user_id()
+    cursor.execute("""
+        INSERT OR REPLACE INTO user_prompts (user_id, prompted)
+        VALUES (?, 1)
+    """, (user_id,))
     conn.commit()
     conn.close()
 
@@ -162,6 +211,32 @@ def get_playlist_songs(playlist_id: str) -> dict:
     return all_songs
 
 
+def track_all_user_playlists():
+    """
+    Track all playlists the user is the owner or co-collaborator of.
+    Adds a snapshot of each playlist to the database.
+    """
+    if not sp:
+        raise RuntimeError("Spotify client not initialized. Call initialize_spotify first.")
+
+    user_id = get_current_user_id()
+    playlists = sp.current_user_playlists(limit=50)
+    
+    while playlists:
+        for playlist in playlists['items']:
+            # Check if the user is the owner or a collaborator
+            if playlist['owner']['id'] == user_id or playlist['collaborative']:
+                playlist_id = playlist['id']
+                print(f"Tracking playlist: {playlist['name']}")
+                songs_dict = get_playlist_songs(playlist_id)
+                store_songs(playlist_id, songs_dict)
+        
+        if playlists['next']:
+            playlists = sp.next(playlists)
+        else:
+            break
+
+
 def track_playlist_updates(playlist_id: str) -> dict:
     """
     1) Get current songs from Spotify,
@@ -178,6 +253,7 @@ def track_playlist_updates(playlist_id: str) -> dict:
 
     # If we have nothing stored previously, there's no "new" difference to show
     if not previous_songs:
+        print("New Playlist Detected")
         return {}
 
     # Identify newly added

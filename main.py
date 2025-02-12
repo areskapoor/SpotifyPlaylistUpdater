@@ -4,6 +4,7 @@ from pyrogram import Client
 
 import spotify_playlist_checker as spc
 import telegram_bot_com as tbot
+import pdb
 
 def main():
     # 1. Load env variables
@@ -31,10 +32,18 @@ def main():
 
     # 4. Initialize the DB
     spc.initialize_db()
+    # Check if the user has been prompted about tracking all playlists
+    if not spc.has_been_prompted_for_tracking():
+        cmd = input("Would you like to track all your playlists? (y/n): ")
+        if cmd.strip().lower() == "y":
+            spc.track_all_user_playlists()
+        # Save that the user has been prompted
+        spc.save_prompted_for_tracking()
 
     # 5. Main logic / loop
     with app:
         while True:
+            
             playlist_url = input("Enter Spotify playlist link or 'q' to exit session: ")
             if playlist_url.strip().lower() == "q":
                 break
